@@ -61,7 +61,7 @@ public class AuthPlus extends JavaPlugin implements Listener {
         }
 
         // Create storage.yml file if it doesn't exist
-        File storageFile = new File(getDataFolder(), "storage.yml");
+        File storageFile= new File(getDataFolder(), "storage.yml");
         if (!storageFile.exists()) {
             try {
                 storageFile.createNewFile();
@@ -181,6 +181,9 @@ public class AuthPlus extends JavaPlugin implements Listener {
 
     private void updateLevel(Player player, long timeout) {
         int secondsLeft = (int) ((timeout - System.currentTimeMillis()) / 1000);
+        if (secondsLeft < 0) {
+            secondsLeft = 0;
+        }
         player.setLevel(secondsLeft);
         Bukkit.getScheduler().runTaskLater(this, () -> updateLevel(player, timeout), 20);
     }
