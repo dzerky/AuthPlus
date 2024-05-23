@@ -1,0 +1,4 @@
+name: AuthPlus
+version: '${project.version}'
+main: com.authplus.AuthPlus
+api-version: '1.19'

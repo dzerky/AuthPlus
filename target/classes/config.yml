@@ -1,0 +1,45 @@
+# AuthPlus configuration
+
+# Set to true if you want to enable invisible mode for unregistered players
+invisible-mode: true
+
+register-sound: BLOCK_NOTE_BLOCK_PLING
+login-success-sound: ENTITY_PLAYER_LEVEL
+
+# Set the minimum password length
+min-password-length: 6
+
+kick-timeout: 60
+
+# Set the list of banned passwords
+banned-passwords:
+  - password
+  - 123456
+  - 12345678
+  - 123456789
+  - 1234567
+  - password1
+  - 1234567890
+  - 123123
+  - 987654321
+  - qwerty
+  - 1q2w3e4r
+  - 654321
+  - 555555
+  - 333333
+  - 111111
+  - 123321
+  - 666666
+  - 999999
+  - 777777
+  - 222222
+  - 888888
+  - 321321
+  - 112233
+  - 654321
+  - 1q2w3e4r
+  - qwerty
+  - 000000
+
+# Set the name of the login data file
+login-data-file: login-data.yml
