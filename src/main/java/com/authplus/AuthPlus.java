@@ -10,6 +10,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.Sound;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +23,7 @@ public class AuthPlus extends JavaPlugin implements Listener {
     private Map<UUID, String> registeredPlayers = new HashMap<>();
     private Map<UUID, Long> authTimeouts = new HashMap<>();
     private Map<UUID, Boolean> frozenPlayers = new HashMap<>();
+    private Map<UUID, Integer> originalLevels = new HashMap<>(); // Nová mapa pro uložení původních úrovní
     private FileConfiguration config;
     private FileConfiguration messages;
     private FileConfiguration storage;
@@ -61,7 +63,7 @@ public class AuthPlus extends JavaPlugin implements Listener {
         }
 
         // Create storage.yml file if it doesn't exist
-        File storageFile= new File(getDataFolder(), "storage.yml");
+        File storageFile = new File(getDataFolder(), "storage.yml");
         if (!storageFile.exists()) {
             try {
                 storageFile.createNewFile();
@@ -89,6 +91,17 @@ public class AuthPlus extends JavaPlugin implements Listener {
             player.setInvisible(true);
             authTimeouts.put(uuid, System.currentTimeMillis() + config.getInt("kick-timeout") * 1000);
             updateLevel(player, authTimeouts.get(uuid));
+            originalLevels.put(uuid, player.getLevel()); // Uložení původní úrovně
+            Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+                if (authTimeouts.containsKey(uuid)) {
+                    long timeLeft = authTimeouts.get(uuid) - System.currentTimeMillis();
+                    if (timeLeft <= 0) {
+                        player.kickPlayer(colorize(messages.getString("timeout-kick")));
+                    } else {
+                        player.setLevel((int) (timeLeft / 1000));
+                    }
+                }
+            }, 0, 20);
         } else {
             player.sendMessage(colorize(messages.getString("register-prompt")));
             freezePlayer(player);
@@ -97,6 +110,17 @@ public class AuthPlus extends JavaPlugin implements Listener {
             }
             authTimeouts.put(uuid, System.currentTimeMillis() + config.getInt("kick-timeout") * 1000);
             updateLevel(player, authTimeouts.get(uuid));
+            originalLevels.put(uuid, player.getLevel()); // Uložení původní úrovně
+            Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+                if (authTimeouts.containsKey(uuid)) {
+                    long timeLeft = authTimeouts.get(uuid) - System.currentTimeMillis();
+                    if (timeLeft <= 0) {
+                        player.kickPlayer(colorize(messages.getString("timeout-kick")));
+                    } else {
+                        player.setLevel((int) (timeLeft / 1000));
+                    }
+                }
+            }, 0, 20);
         }
     }
 
@@ -127,24 +151,24 @@ public class AuthPlus extends JavaPlugin implements Listener {
             unfreezePlayer(player);
             player.setInvisible(false);
             authTimeouts.remove(uuid);
-            player.setLevel(0);
-        } else if(command.startsWith("/login")) {
+            player.setLevel(originalLevels.get(uuid)); // Nastavení původní úrovně
+            playSound(player, config.getString("register-sound"));
+        } else if (command.startsWith("/login")) {
             if (!registeredPlayers.containsKey(uuid)) {
                 player.sendMessage(colorize(messages.getString("not-registered")));
                 return;
             }
             String password = command.split(" ")[1];
-            if (registeredPlayers.get(uuid).equals(password)) {
-                authTimeouts.remove(uuid);
-                player.sendMessage(colorize(messages.getString("login-success")));
-                unfreezePlayer(player);
-                player.setInvisible(false);
-                player.setLevel(0);
-            } else {
+            if (!registeredPlayers.get(uuid).equals(password)) {
                 player.sendMessage(colorize(messages.getString("login-failed")));
+                return;
             }
-        } else if (command.startsWith("/premium")) {
-            // todo: implement premium mode
+            player.sendMessage(colorize(messages.getString("login-success")));
+            unfreezePlayer(player);
+            player.setInvisible(false);
+            authTimeouts.remove(uuid);
+            player.setLevel(originalLevels.get(uuid)); // Nastavení původní úrovně
+            playSound(player, config.getString("login-sound"));
         }
     }
 
@@ -154,10 +178,19 @@ public class AuthPlus extends JavaPlugin implements Listener {
         UUID uuid = player.getUniqueId();
         if (frozenPlayers.containsKey(uuid) && frozenPlayers.get(uuid)) {
             event.setCancelled(true);
-            if (System.currentTimeMillis() > authTimeouts.get(uuid)) {
-                player.kickPlayer(colorize(messages.getString("timeout-kick")));
-            }
         }
+    }
+
+    private void freezePlayer(Player player) {
+        frozenPlayers.put(player.getUniqueId(), true);
+    }
+
+    private void unfreezePlayer(Player player) {
+        frozenPlayers.put(player.getUniqueId(), false);
+    }
+
+    private void updateLevel(Player player, long timeout) {
+        player.setLevel((int) ((timeout - System.currentTimeMillis()) / 1000));
     }
 
     private boolean isBannedPassword(String password) {
@@ -167,29 +200,6 @@ public class AuthPlus extends JavaPlugin implements Listener {
             }
         }
         return false;
-    }
-
-    private void freezePlayer(Player player) {
-        UUID uuid = player.getUniqueId();
-        frozenPlayers.put(uuid, true);
-    }
-
-    private void unfreezePlayer(Player player) {
-        UUID uuid = player.getUniqueId();
-        frozenPlayers.put(uuid, false);
-    }
-
-    private void updateLevel(Player player, long timeout) {
-        int secondsLeft = (int) ((timeout - System.currentTimeMillis()) / 1000);
-        if (secondsLeft < 0) {
-            secondsLeft = 0;
-        }
-        player.setLevel(secondsLeft);
-        Bukkit.getScheduler().runTaskLater(this, () -> updateLevel(player, timeout), 20);
-    }
-
-    private String colorize(String message){
-        return message.replace("&", "§");
     }
 
     private void saveMessages() {
@@ -208,23 +218,12 @@ public class AuthPlus extends JavaPlugin implements Listener {
         }
     }
 
-    public void saveLoginData(UUID uuid, long loginTime) {
-        File loginDataFile = new File(getDataFolder(), config.getString("login-data-file"));
-        FileConfiguration loginData = YamlConfiguration.loadConfiguration(loginDataFile);
-
-        loginData.set(uuid.toString() + ".login-time", loginTime);
-
-        try {
-            loginData.save(loginDataFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private String colorize(String message) {
+        return message.replace("&", "§");
     }
 
-    public long loadLoginData(UUID uuid) {
-        File loginDataFile = new File(getDataFolder(), config.getString("login-data-file"));
-        FileConfiguration loginData = YamlConfiguration.loadConfiguration(loginDataFile);
-
-        return loginData.getLong(uuid.toString() + ".login-time");
+    private void playSound(Player player, String sound) {
+        Sound soundEffect = Sound.valueOf(sound.toUpperCase());
+        player.playSound(player.getLocation(), soundEffect, 1, 1);
     }
 }
