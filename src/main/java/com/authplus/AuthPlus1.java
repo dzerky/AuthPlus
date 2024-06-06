@@ -92,6 +92,11 @@ public class AuthPlus extends JavaPlugin implements Listener {
             authTimeouts.put(uuid, System.currentTimeMillis() + config.getInt("kick-timeout") * 1000);
             originalLevels.put(uuid, player.getLevel());
             updateLevel(player, authTimeouts.get(uuid));
+            Bukkit.getScheduler().runTaskLater(this, () -> {
+                if (authTimeouts.containsKey(uuid) && System.currentTimeMillis() > authTimeouts.get(uuid)) {
+                    player.kickPlayer(colorize(messages.getString("timeout-kick")));
+                }
+            }, config.getInt("kick-timeout") * 20); // 20 ticks = 1 second
         } else {
             player.sendMessage(colorize(messages.getString("register-prompt")));
             freezePlayer(player);
@@ -101,6 +106,11 @@ public class AuthPlus extends JavaPlugin implements Listener {
             authTimeouts.put(uuid, System.currentTimeMillis() + config.getInt("kick-timeout") * 1000);
             originalLevels.put(uuid, player.getLevel());
             updateLevel(player, authTimeouts.get(uuid));
+            Bukkit.getScheduler().runTaskLater(this, () -> {
+                if (authTimeouts.containsKey(uuid) && System.currentTimeMillis() > authTimeouts.get(uuid)) {
+                    player.kickPlayer(colorize(messages.getString("timeout-kick")));
+                }
+            }, config.getInt("kick-timeout") * 20); // 20 ticks = 1 second
         }
     }
 
@@ -110,7 +120,7 @@ public class AuthPlus extends JavaPlugin implements Listener {
         String command = event.getMessage();
         UUID uuid = player.getUniqueId();
 
-        if (command.startsWith("/register")) {
+        if(command.startsWith("/register")) {
             if (registeredPlayers.containsKey(uuid)) {
                 player.sendMessage(colorize(messages.getString("already-registered")));
                 return;
