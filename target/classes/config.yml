@@ -1,0 +1,115 @@
+# AuthPlus configuration
+
+# Set to true if you want to enable invisible mode for unregistered players
+invisible-mode: true
+
+register-sound: BLOCK_NOTE_BLOCK_PLING
+login-sound: ENTITY_PLAYER_LEVELUP
+
+# Set the minimum password length
+min-password-length: 6
+
+kick-timeout: 60
+
+# ==========================================
+# Database Configuration
+# ==========================================
+# Available backends: SQLITE, MYSQL, MARIADB, POSTGRESQL, H2, MONGODB
+#
+# SQLITE and H2 are file-based (no external server needed).
+# MYSQL, MARIADB, POSTGRESQL, and MONGODB require a running server.
+#
+# Default ports (used if 'port' is 0):
+#   MySQL / MariaDB: 3306
+#   PostgreSQL:      5432
+#   MongoDB:         27017
+data:
+  backend: SQLITE
+
+  # Connection settings (for MySQL, MariaDB, PostgreSQL, MongoDB)
+  # Supports "host:port" format in address, or set port separately
+  address: localhost
+  port: 0
+  database: authplus
+  username: root
+  password: ''
+
+  # Table / collection name
+  table-name: authplus_players
+
+# ==========================================
+# Login Spawn Location
+# ==========================================
+# Players will be teleported here when joining and must
+# register/login before being teleported back.
+# Use /authplus:setlogin in-game to set the location to where you stand.
+login-spawn:
+  enabled: false
+  world: world
+  x: 0.0
+  y: 64.0
+  z: 0.0
+  yaw: 0.0
+  pitch: 0.0
+
+# ==========================================
+# Password Hashing Configuration
+# ==========================================
+# Available algorithms:
+#   MD5        - Fast but weak, NOT recommended for production
+#   SHA256     - Better than MD5, salted
+#   SHA512     - Stronger variant of SHA, salted
+#   BCRYPT2A   - BCrypt with $2a$ prefix (recommended)
+#   BCRYPT2Y   - BCrypt with $2y$ prefix (PHP-compatible)
+#   PBKDF2     - Key derivation function, configurable iterations
+#   ARGON2ID   - Argon2 hybrid variant (most recommended)
+#   ARGON2I    - Argon2 side-channel resistant variant
+#   ARGON2D    - Argon2 data-dependent variant
+#
+# NOTE: Changing the algorithm will NOT break existing passwords.
+#       Old passwords are auto-detected on login by their hash prefix.
+hashing:
+  algorithm: SHA256
+
+  # Salt length in bytes (used by MD5, SHA256, SHA512, PBKDF2, Argon2)
+  salt-length: 16
+
+  # BCrypt cost factor (4-31, higher = slower + more secure, default: 12)
+  bcrypt-cost: 12
+
+  # PBKDF2 settings
+  pbkdf2-iterations: 600000
+  pbkdf2-key-length: 256
+
+  # Argon2 settings
+  argon2-iterations: 3
+  argon2-memory: 65536       # Memory usage in KB (65536 = 64 MB)
+  argon2-parallelism: 1      # Number of threads
+  argon2-hash-length: 32     # Output hash length in bytes
+
+# Set the list of banned passwords
+banned-passwords:
+  - password
+  - 123456
+  - 12345678
+  - 123456789
+  - 1234567
+  - password1
+  - 1234567890
+  - 123123
+  - 987654321
+  - qwerty
+  - 1q2w3e4r
+  - 654321
+  - 555555
+  - 333333
+  - 111111
+  - 123321
+  - 666666
+  - 999999
+  - 777777
+  - 222222
+  - 888888
+  - 321321
+  - 112233
+  - 000000

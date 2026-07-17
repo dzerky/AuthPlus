@@ -1,0 +1,12 @@
+com\authplus\PasswordHasher.class
+com\authplus\SQLDatabaseProvider.class
+com\authplus\AuthPlus.class
+com\authplus\MongoDBDatabaseProvider.class
+com\authplus\SQLDatabaseProvider$SQLBackend.class
+com\authplus\SQLDatabaseProvider$1.class
+com\authplus\PasswordHasher$HashAlgorithm.class
+com\authplus\MojangAPI$MojangProfile.class
+com\authplus\DatabaseFactory.class
+com\authplus\PasswordHasher$1.class
+com\authplus\MojangAPI.class
+com\authplus\DatabaseProvider.class

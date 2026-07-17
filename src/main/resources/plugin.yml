@@ -1,0 +1,38 @@
+name: AuthPlus
+version: '${project.version}'
+main: com.authplus.AuthPlus
+api-version: '1.19'
+commands:
+  login:
+    description: Log in to your account
+    usage: /login <password>
+  register:
+    description: Register a new account
+    usage: /register <password>
+  premium:
+    description: Enable premium auto-login (requires a legitimate Minecraft account)
+    usage: /premium
+    aliases: [autologin]
+  cracked:
+    description: Disable premium auto-login and switch back to password login
+    usage: /cracked
+    aliases: [unpremium]
+  changepassword:
+    description: Change your password
+    usage: /changepassword <current password> <new password>
+    aliases: [changepw]
+  unregister:
+    description: Unregister an account (yourself or a player by name)
+    usage: /unregister [player]
+  setlogin:
+    description: Set the login spawn location to your current position
+    usage: /authplus:setlogin
+    permission: authplus.setlogin
+    aliases: [authplussetlogin]
+permissions:
+  authplus.setlogin:
+    description: Allows setting the login spawn location
+    default: op
+  authplus.unregister:
+    description: Allows unregistering other players
+    default: op
